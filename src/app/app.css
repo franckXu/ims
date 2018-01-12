@@ -1,0 +1,17 @@
+.big {
+  width: 100%;
+  height: 100%;
+}
+.left {
+  float: left;
+  width: 150px;
+  height: 100%;
+  background-color: gold;
+}
+.right {
+  height: 100%;
+  float: left;
+}
+#treeView {
+  color: black;
+}

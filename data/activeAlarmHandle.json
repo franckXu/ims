@@ -1,0 +1,13 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "list": [{
+            
+        }]
+
+    }
+}

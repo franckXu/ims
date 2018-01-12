@@ -1,0 +1,35 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "history_list": [{
+            "id" 				: "编号1",
+            "alarm_id" 			: "告警编号1",
+            "operator_id"		: "处理人1",
+            "process_time"		: "处理时间1",
+            "process_type"		: "处理动作1",
+            "process_result"	: "处理结果1",
+            "process_record"	: "处理记录1"		
+        },{
+            "id" 				: "编号2",
+            "alarm_id" 			: "告警编号2",
+            "operator_id"		: "处理人2",
+            "process_time"		: "处理时间2",
+            "process_type"		: "处理动作2",
+            "process_result"	: "处理结果2",
+            "process_record"	: "处理记录2"		
+        },{
+            "id" 				: "编号3",
+            "alarm_id" 			: "告警编号3",
+            "operator_id"		: "处理人3",
+            "process_time"		: "处理时间3",
+            "process_type"		: "处理动作3",
+            "process_result"	: "处理结果3",
+            "process_record"	: "处理记录3"
+        }]
+
+    }
+}

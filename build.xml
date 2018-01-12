@@ -1,0 +1,12 @@
+<project name="imsFrontEnd" default="war">
+   <target name="war" depends="clean">
+        <war destfile="imsFrontEnd.war">
+            <fileset dir="dist"/>
+        </war>
+    </target>
+
+    <target name="clean">
+        <delete file="imsFrontEnd.war" />
+    </target>
+
+</project>

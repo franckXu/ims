@@ -1,0 +1,23 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "alarm_list": [{
+            "grade":"严重",
+            "color":"red",
+            "conut":"1"
+        },{
+            "grade":"紧急",
+            "color":"red",
+            "conut":"2"
+        },{
+            "grade":"一般",
+            "color":"red",
+            "conut":"3"
+        }]
+
+    }
+}

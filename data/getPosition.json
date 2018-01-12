@@ -1,0 +1,40 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "list": [{
+            "id": "x0",
+            "name": "x0",
+            "type": "0",
+            "positionX": "",
+            "positionY": ""
+        }, {
+            "id": "x1",
+            "name": "x1",
+            "type": "1",
+            "positionX": "",
+            "positionY": ""
+        }, {
+            "id": "x2",
+            "name": "x2",
+            "type": "0",
+            "positionX": 376.82665581643914,
+            "positionY": 391.5757573323447
+        }, {
+            "id": "x3",
+            "name": "x3",
+            "type": "0",
+            "positionX": "",
+            "positionY": ""
+        }, {
+            "id": "x4",
+            "name": "x4",
+            "type": "0",
+            "positionX": 273.1675078240699,
+            "positionY": 377.42958371807384
+        }]
+    }
+}

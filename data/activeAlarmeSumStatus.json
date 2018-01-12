@@ -1,0 +1,19 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "alarm_list": [{
+            "process_type":"未处理",
+            "count":"1"
+        },{
+            "process_type":"已处理",
+            "count":"2"
+        },{
+            "process_type":"未确认",
+            "count":"3"
+        }]
+    }
+}

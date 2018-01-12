@@ -1,0 +1,102 @@
+<form id="qryForm">
+    <div class="row">
+
+        <div class="col">
+            <div class="form-group row">
+                <label for="organization" class="col-sm-4 col-form-label">归属组织机构</label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="organization" name="organization" placeholder="">
+                        <div class="input-group-addon organizationBorwserBtn" id="organizationBorwserBtn">...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="col">
+            <div class="form-group row">
+                <label for="generator-room" class="col-sm-4 col-form-label">归属机房</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="generator-room" name="generator-room">
+                        <option>请选择</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="name" class="col-sm-4 col-form-label">设备名称</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="name" name="name" placeholder="">
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="ip" class="col-sm-4 col-form-label">IP地址</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="ip" name="ip" placeholder="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="vender" class="col-sm-4 col-form-label">厂家</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="vender" name="vender">
+                        <option>请选择</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group row">
+                <label for="model" class="col-sm-4 col-form-label">型号</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="model" name="model">
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group row">
+                <label for="status" class="col-sm-4 col-form-label">状态</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="status" name="status">
+                        <option>请选择</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col text-right">
+            <button id="qryEquipmentBtn" type="button" class="btn btn-primary">查询</button>
+            <button type="reset" class="btn btn-default">重置</button>
+        </div>
+    </div>
+</form>
+
+<div class="equipmentTable-wrap">
+    <table id="equipmentTable" class="equipmentTable"></table>
+</div>
+
+<div class="text-right m-2">
+    <button id="submitBtn" class="btn btn-primary" type="button">确定</button>
+    <button id="cancelBtn" class="btn btn-default" type="button">取消</button>
+</div>

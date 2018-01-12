@@ -1,0 +1,14 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "list": [{
+            "type": "1",
+            "id": "x1",
+            "grade": "要爆炸了"
+        }]
+    }
+}

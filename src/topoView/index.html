@@ -1,0 +1,18 @@
+<div id="topoView" class="page-wrap">
+    <div id="toolbar">
+        <div class="jtopo_toolbar m-1">
+            <button class="btn btn-primary btn-sm" id="centerButton">居中显示</button>
+            <button class="btn btn-primary btn-sm" id="fullScreenButton">全屏显示</button>
+            <button class="btn btn-primary btn-sm" id="zoomOutButton"> 放 大 </button>
+            <button class="btn btn-primary btn-sm" id="zoomInButton"> 缩 小 </button>
+            <button class="btn btn-primary btn-sm" id="save">保存位置</button>
+        </div>
+    </div>
+    <div id="canvas-wrap"> </div>
+    <ul id="contextmenu" class="contextmenu" style="display:none;">
+        <li id="showEquipmentInfoBtn" class="contextmenu-item">设备信息</li>
+        <li id="showNextLevelTopoBtn" class="contextmenu-item">设备内拓扑</li>
+        <li id="showAlarmDetailBtn" class="contextmenu-item">告警详情</li>
+    </ul>
+    <div id="equipment-info-dialog" class="easyui-dialog equipment-info-dialog" title="详情"></div>
+</div>

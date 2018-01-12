@@ -1,0 +1,41 @@
+{
+    "header": {
+        "rspcode": "0000",
+        "rspdesc": "描述",
+        "responseseq": "错误原因"
+    },
+    "response": {
+        "list": [{
+            "linkId": "821",
+            "fromEquipment": "x2",
+            "toEquipment": "x0",
+            "type": "1"
+        }, {
+            "linkId": "955",
+            "fromEquipment": "x2",
+            "toEquipment": "x1",
+            "type": "0"
+        }, {
+            "linkId": "280",
+            "fromEquipment": "x3",
+            "toEquipment": "x0",
+            "type": "0"
+        }, {
+            "linkId": "269",
+            "fromEquipment": "x3",
+            "toEquipment": "x1",
+            "type": "1"
+        }, {
+            "linkId": "707",
+            "fromEquipment": "x4",
+            "toEquipment": "x0",
+            "type": "1"
+        }, {
+            "linkId": "577",
+            "fromEquipment": "x4",
+            "toEquipment": "x1",
+            "type": "1"
+        }]
+
+    }
+}

@@ -1,0 +1,66 @@
+<div id="parent_id">
+    <div class="easyui-tabs" id="treeTab" style="width: 100%;overflow: hidden">
+        <div title="资源专业视图" style="padding:20px">
+            <ul id="proTree">
+            </ul>
+        </div>
+        <div title="资源地理视图" style="padding:20px">
+            <ul id="geographyTree">
+            </ul>
+        </div>
+    </div>
+    
+    <!--右键显示菜单-->
+    <div id="operation_panel" class="easyui-menu" style="width:120px;" data-options="itemHeight:32">
+        <div id="add_catalog">新建目录...</div>
+        <div id="add_equipment">挂接已有设备...</div>
+        <div class="menu-sep"></div>
+        <div id="edit_item">修改...</div>
+        <div id="remove_item">删除...</div>
+        <div class="menu-sep"></div>
+        <div id="refurbish_item">刷新</div>
+    </div>
+
+    <!--修改设备显示设备信息面板-->
+    <div id="equipmentinfo" class="easyui-menu" style="width:120px;">
+        <div id="">新建</div>
+    </div>
+
+    <div id="cataloginfo" class="easyui-dialog cataloginfo-dialog" title="管理">
+        <form action="#">
+            <div class="form-group">
+                <input type="text" name="catalog_name_ipt" id="catalog_name_ipt" class="form-control"
+                    placeHolder="输入新的名称" />
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-primary" id="ipt_confirm_btn">确定</button>
+                <button type="button" class="btn btn-default" id="ipt_cancle_btn">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="deleteCatalog-dialog" class="easyui-dialog deleteCatalog-dialog" title="删除">
+        <div class="row m-4 content">
+            <!-- 这里的html动态加载 -->
+        </div>
+        <form class="row text-center">
+            <div class="form-group col-sm-12">
+                <button type="button" id="confirmBtn" class="btn btn-primary">确定</button>
+                <button type="button" id="cancleBtn" class="btn btn-default">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="choose-equipment-dialog" class="easyui-dialog choose-equipment-dialog"
+        title="选择设备">
+    </div>
+    <div id="choose-organization-dialog" class="easyui-dialog choose-organization-dialog"
+        title="选择组织机构">
+        <ul id="organizationTree" class="organization-tree easyui-tree"></ul>
+
+        <div class="text-right">
+            <button type="button" id="submitBtn" class="btn btn-primary">确定</button>
+            <button type="button" id="cancelBtn" class="btn btn-default">取消</button>
+        </div>
+    </div>
+</div>

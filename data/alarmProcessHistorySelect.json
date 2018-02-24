@@ -5,7 +5,7 @@
         "responseseq": "错误原因"
     },
     "response": {
-        "history_list": [{
+        "positionList": [{
             "id" 				: "编号1",
             "alarm_id" 			: "告警编号1",
             "operator_id"		: "处理人1",

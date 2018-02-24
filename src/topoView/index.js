@@ -9,21 +9,9 @@ const alarmGradeService = createRequest('alarmGrade');
 const savePositionService = createRequest('savePosition');
 const qryEquipmentDetailService = createRequest('qryEquipmentDetail');
 
-function newFlexionalLink(nodeA, nodeZ, arrowsRadius = 0, text = "", dashedPattern) {
-    var link = new JTopo.FlexionalLink(nodeA, nodeZ, text);
-    link.arrowsRadius = arrowsRadius;
-    link.lineWidth = 3; // 线宽
-    link.offsetGap = 30;
-    link.bundleGap = 15; // 线条之间的间隔
-    link.textOffsetY = 10; // 文本偏移量（向下15个像素）
-    link.strokeColor = JTopo.util.randomColor(); // 线条颜色随机
-    link.dashedPattern = dashedPattern;
-    return link;
-}
-
 function newLink(nodeA, nodeZ, text = "", dashedPattern) {
     var link = new JTopo.Link(nodeA, nodeZ, text);
-    link.arrowsRadius = 10;
+    // link.arrowsRadius = 10;
     link.lineWidth = 3; // 线宽
     link.bundleOffset = 60; // 折线拐角处的长度
     link.bundleGap = 20; // 线条之间的间隔
@@ -32,16 +20,25 @@ function newLink(nodeA, nodeZ, text = "", dashedPattern) {
     link.dashedPattern = dashedPattern;
     return link;
 }
-const nodeImageTypeEnum = {
-    '$2': 'virtual',
-    '$1': 'device',
-    '$0': 'port',
+const nodeImageTypeEnum = (idx)=>{
+    /* type：0-端口；1-设备 ；
+        2-专业视图组织机构中的设备节点；3、专业视图组织机构中的组织节点；
+        4-地理视图组织机构设备节点；5-地理视图组织机构组织节点； */
+    if (idx === '$0') {
+        return 'port'
+    }else if(idx === '$1' || idx === '$2' || idx === '$4'){
+        return 'device';
+    }else{
+        return 'virtual';
+    }
 }
 
 const Model = Backbone.Model.extend({
     defaults: {
         nodeList: [],
-        notHavePosiNodeCount: 0
+        nodeInfo:'',
+        notHavePosiNodeCount: 0,
+        notHavePosiPortNodeCount: 0
     }
 })
 
@@ -57,7 +54,7 @@ export default Backbone.View.extend({
     },
     showEquipmentInfo() {
         qryEquipmentDetailService({
-            id : this.contextMenuNode.$$data.id
+            id : this.contextMenuNode.$$data.id.toString()
         })
         .then(resp => {
             if ( resp.header.rspcode === '0000') {
@@ -70,42 +67,50 @@ export default Backbone.View.extend({
         });
     },
     showNextLevelTopo() {
-        const {
-            type: nodeType,
-            id
-        } = this.contextMenuNode.$$data;
-        window.appEvent.trigger('change_tree_selectedNode', {
-            node: {
-                nodeType,
-                id
-            }
-        });
+        this.loadNextLevelTopo(this.contextMenuNode.$$data)
     },
     showAlarmDetail() {
-        console.log('alarm', this.contextMenuNode);
+        //zhangbaogen
+        var dataParameters = this.contextMenuNode;
+        var id = dataParameters.id;
+        var equipmentId = dataParameters.equipment_id;
+
+        //判断本身以及自身是否有告警
+        var alarmInfo = dataParameters.alarmInfo;
+        // console.log('topo View',this.model.get('nodeList'))
+        // let nodeInfo = this.model.get('nodeInfo');
+        // console.log(nodeInfo);
+
+        appEvent.trigger('warnDetailFn', {
+            id: id,
+            equipmentId: equipmentId,
+            nodeInfo:dataParameters
+        })
     },
     initialize() {
         this.listenTo(this.model, 'clear', this.renderCanvas);
-        /* console.log(process.env.NODE_ENV)
-        console.log(isProd) */
     },
 
+    canvasNormalHeight : 0,
+    canvasNormalWidth : 0,
     renderCanvas() {
         this.$("#canvas-wrap #canvas").remove();
 
-        console.log($("#canvas-wrap").outerHeight());
+        this.canvasNormalHeight = this.$("#canvas-wrap").parents(".panel-body").height() - $("#toolbar").height();
+        this.canvasNormalWidth =  $("#canvas-wrap").width() - 20;
+
         $("<canvas />")
             .attr({
                 id:     'canvas',
-                height: this.$("#canvas-wrap").parents(".panel-body").height() - $("#toolbar").height(),
-                width:  $("#canvas-wrap").width() - 20
+                height:  this.canvasNormalHeight,
+                width: this.canvasNormalWidth
             })
             .addClass('canvas')
             .appendTo(this.$("#canvas-wrap"))
 
     },
-
     render() {
+        const self = this;
         this.$el.html(this.template());
         $.parser.parse('#topoView');
 
@@ -114,11 +119,15 @@ export default Backbone.View.extend({
         window.appEvent.on('change_tree_selectedNode', ({
             node
         }) => {
+            this.model.set('nodeInfo',node);
+            console.log( 'nodeInfo-->',this.model.get('nodeInfo'))
             this.model.set({
                 nodeList: [],
                 notHavePosiNodeCount: 0,
-                mainNodeId: '' + node.id
+                notHavePosiPortNodeCount: 0,
+                mainNodeId: (node.equipment_id || node.id).toString()
             }).trigger('clear');
+
             switch (node.nodeType) {
                 case '0':
                     this.reqOrgTopo({
@@ -129,7 +138,7 @@ export default Backbone.View.extend({
                 case '1':
                     this.reqEquipmentTopo({
                         type: '1',
-                        id: ''+node.id,
+                        id: ''+node.equipment_id,
                         equipment_id : node.equipment_id
                     })
                     break;
@@ -143,7 +152,30 @@ export default Backbone.View.extend({
                 default:
                     // console.log("not match",node);
             }
-        });
+        })
+
+        document.addEventListener('webkitfullscreenchange',()=>{
+            var c = document.getElementById('canvas');
+            if(document.fullscreen || document.webkitIsFullScreen) {
+                c.width = window.screen.width;
+                c.height = window.screen.height;
+            } else {
+                c.width  = this.canvasNormalWidth;
+                c.height = this.canvasNormalHeight;
+            }
+        })
+
+        appEvent.on('resize_topo_panel_width', ({w,h})=>{
+            if(document.fullscreen || document.webkitIsFullScreen) return;
+            if(!this.$('#canvas').length) return;
+            this.$('#canvas')[0].width = w;
+        })
+
+        appEvent.on('resize_topo_panel_height', ({w,h})=>{
+            if(document.fullscreen || document.webkitIsFullScreen) return ;
+            if(!this.$('#canvas').length) return ;
+            this.$('#canvas')[0].height = h - $("#toolbar").height();
+        })
 
         return this;
     },
@@ -151,7 +183,7 @@ export default Backbone.View.extend({
         Promise.all([
             alarmGradeService({
                 type : node.type,
-                id : node.id
+                id : [''+node.id]
             })
         ]).then(resp => {
             const [alarmGradeResp] = resp;
@@ -179,33 +211,47 @@ export default Backbone.View.extend({
         });
     },
     reqEquipmentTopo(reqParam) {
-        Promise.all([
-            getPositionService(reqParam),
-            alarmGradeService(reqParam)
-        ]).then(resp => {
-            const [nodeListResp, alarmGradeResp] = resp;
-            if (
-                nodeListResp.header.rspcode === '0000' &&
-                alarmGradeResp.header.rspcode === '0000'
-            ) {
+        getPositionService(reqParam)
+            .then(({ header, response }) => {
+                if (header.rspcode !== '0000') return alert('加载失败');
                 const scene = this.renderTopoStage();
-                this.renderTopoNode(nodeListResp.response.list, scene);
-                this.renderTopoAlarm(alarmGradeResp.response.list);
-                this.renderTopoLinkByEquiment(scene);
-            } else {
+                /* for (let i = 0, len = 100; i < len; i++) {
+                    response.list.push({
+                        "equipment_id":1110,
+                        "id":80 + i,
+                        "name":`端端口端口端口端口端口${i}`,
+                        "positionX":'',
+                        "positionY":'',
+                        "type":"0"
+                    })
+                } */
+                this.renderTopoNode(response.list, scene);
+                // this.renderTopoLinkByEquiment(scene);
+
+                alarmGradeService({
+                    type:         reqParam.type,
+                    id:           response.list.map(item=>item.id).map(item=>item.toString()),
+                    equipment_id: reqParam.equipment_id
+                })
+                    .then(({ header, response }) => {
+                        if (header.rspcode !== '0000') return alert('加载失败');
+                        this.renderTopoAlarm(response.list);
+                        // this.stage.centerAndZoom(); //缩放并居中显示
+                    }, function() {
+                        alert('加载失败')
+                        console.log(arguments);
+                    });
+            }, err => {
                 alert('加载失败')
-                    // console.log(resp);
-            }
-        }, function() {
-            alert('加载失败')
-                // console.log(arguments);
-        });
+                console.log(arguments);
+            })
+
     },
 
     renderTopoLinkByEquiment(scene) {
         const nodeList = this.model.get('nodeList');
         const mainNodeId = this.model.get('mainNodeId');
-        const mainNode = nodeList.find(node => node.$$data.id === mainNodeId);
+        const mainNode = nodeList.find(node => ''+node.$$data.id === ''+mainNodeId);
         const hasPositionNodeList = [];
 
         if (!mainNode) return;
@@ -213,7 +259,6 @@ export default Backbone.View.extend({
         for (let i = 0, len = nodeList.length, node; i < len; i++) {
             node = nodeList[i];
             if (node.$$data.id !== mainNode.$$data.id) {
-                // var link = newFlexionalLink( mainNode,node);
                 const link = new JTopo.Link(mainNode, node); // 这里的node是端口节点
                 if (
                     typeof(node.$$data.positionX) === 'number' &&
@@ -246,69 +291,70 @@ export default Backbone.View.extend({
         const tab = $('#treeTab').tabs('getSelected');
         const index = $('#treeTab').tabs('getTabIndex', tab);
 
-        /*
-        * 2-专业视图组织机构中的设备节点；
-        * 3、专业视图组织机构中的组织节点；
-        * 4-地理视图组织机构设备节点；
-        * 5-地理视图组织机构组织节点；
-        */
-
         // nodeType: 0=专业视图 1=地理视图
-        let type ;
-        if (index === 0) {
-            type = eq ? '2' : '3'
-        } else {
-            type = eq ? '4' : '5'
-        }
+        const type = index === 0 ? '3' : '5' ;
 
-        Promise.all([
-            getEquipmentLinkService({
-                type: '1',
-                id: id
-            }),
-            getPositionService({
-                type : type,
-                id : id
-            }),
-            alarmGradeService({
-                type : '1',
-                id : id
-            })
-        ]).then(resp => {
-            const [linkToNodeListResp, nodeListResp, alarmGradeResp] = resp;
-            if (
-                linkToNodeListResp.header.rspcode === '0000' &&
-                nodeListResp.header.rspcode === '0000' &&
-                alarmGradeResp.header.rspcode === '0000'
-            ) {
-                const scene = this.renderTopoStage();
-                this.renderTopoNode(nodeListResp.response.list, scene);
-                this.renderTopoLink(linkToNodeListResp.response.list, scene);
-                this.renderTopoAlarm(alarmGradeResp.response.list);
-                this.renderLevelLine(scene);
-            } else {
-                alert('加载失败')
-                    // console.log(resp);
-            }
-        }, function() {
+        getPositionService({
+            type : type,
+            id : id
+        }).then(({header,response})=>{
+            if(header.rspcode !== '0000') return alert('加载失败');
+
+            const scene = this.renderTopoStage();
+            this.renderTopoNode(response.list, scene);
+            // this.renderLevelLine(scene);
+            this.stage.centerAndZoom(); //缩放并居中显示
+
+            const idList = response.list.filter(item=>item.equipment_id).map(item=> item.equipment_id.toString());
+            // if( response.list.filter(item=>  item.type === '1' ).length > 1 ){
+                    getEquipmentLinkService({
+                        type: '1',
+                        id: idList
+                    }).then(({header,response})=>{
+                        if (header.rspcode !== '0000')  return alert('加载失败');
+                        this.renderTopoLink(response.list, scene);
+                        this.stage.centerAndZoom(); //缩放并居中显示
+                    },function(){
+                        alert('加载失败')
+                        console.log(arguments);
+                    })
+            // }
+
+            // if (response.list.filter(item=> item.type === '1').length > 0) {
+                    alarmGradeService({
+                        type : '1',
+                        id : idList
+                    }).then(({header,response})=>{
+                        if (header.rspcode !== '0000')  return alert('加载失败');
+                        this.renderTopoAlarm(response.list);
+                        this.stage.centerAndZoom(); //缩放并居中显示
+                    },function(){
+                        alert('加载失败')
+                        console.log(arguments);
+                    })
+            // }
+
+        },function(){
             alert('加载失败')
-                // console.log(arguments);
-        });
+            console.log(arguments);
+        })
     },
 
     renderLevelLine(scene) {
         const mainNodeId = this.model.get('mainNodeId');
-        const mainNode = this.model.get('nodeList').find(node => node.$$data.id === mainNodeId)
+        const mainNode = this.model.get('nodeList').find(node => ''+node.$$data.id === ''+mainNodeId)
         this.model.get('nodeList').forEach(node => {
-            if (node.$$data.id !== mainNodeId) {
+            if ('' + node.$$data.id !== '' + mainNodeId) {
                 scene.add(newLink(mainNode, node))
             }
         })
     },
 
+    stage : null,
     renderTopoStage() {
         var self = this;
-        var stage = new JTopo.Stage(this.$("#canvas-wrap #canvas")[0]);
+        this.stage = new JTopo.Stage(this.$("#canvas-wrap #canvas")[0]);
+        const stage = this.stage;
         //显示工具栏
         showJTopoToobar(stage, "#toolbar");
         var scene = new JTopo.Scene();
@@ -326,13 +372,18 @@ export default Backbone.View.extend({
     },
 
     renderTopoNode(nodeList, scene) {
+        const mainNodeId = this.model.get('mainNodeId');
+
         for (let i = 0, len = nodeList.length, node; i < len; i++) {
             node = Object.assign(this.createNode(nodeList[i]), {
                 $$data: nodeList[i]
             });
-            scene.add(node);
 
-            this.model.set('nodeList', [...this.model.get('nodeList'), node]);
+            if (''+node.$$data.id !== ''+mainNodeId) {
+                scene.add(node);
+                // TODO 此处可能会产生性能问题,待处理
+                this.model.set('nodeList', [...this.model.get('nodeList'), node]);
+            }
         }
 
     },
@@ -345,12 +396,14 @@ export default Backbone.View.extend({
             for (let i = 0, nodeLen = this.model.get('nodeList').length, node; i < nodeLen; i++) {
                 node = this.model.get('nodeList')[i];
                 // TODO 这里只用id作判断，在跨表中，id可能不是唯一的
-                if (node.$$data.id === lineData.fromEquipment) {
+                const id = node.$$data.equipment_id || node.$$data.id;
+                if (id === lineData.fromEquipmen) {
                     fromNode = node;
                 }
-                if (node.$$data.id === lineData.toEquipment) {
+                if (id === lineData.toEquipment) {
                     toNode = node;
                 }
+
             }
 
             if (toNode && fromNode) {
@@ -365,9 +418,9 @@ export default Backbone.View.extend({
         // console.log(alarmGradeList);
         for (let z = 0, len = alarmGradeList.length, alarm, targetNode; z < len; z++) {
             alarm = alarmGradeList[z];
-            targetNode = this.model.get('nodeList').find(node => node.$$data.id === alarm.id);
+            targetNode = this.model.get('nodeList').find(node => ''+node.$$data.id === ''+alarm.id);
             if (targetNode) {
-                targetNode.alarm = alarm.grade;
+                targetNode.alarm = alarm.title;
             }
         }
 
@@ -405,53 +458,79 @@ export default Backbone.View.extend({
     },
 
     createNode(data) {
-        const {
-            positionX,
-            positionY
-        } = data;
+        const { positionX, positionY } = data;
         var node = new JTopo.Node(data.name);
 
         if (typeof(positionX) === 'number' && typeof(positionY) === 'number') {
             node.setLocation(positionX, positionY);
         } else {
             let notHavePosiNodeCount = this.model.get('notHavePosiNodeCount');
-            node.setLocation(notHavePosiNodeCount * 50, $("#canvas-wrap").height() - 50);
-            this.model.set('notHavePosiNodeCount', ++notHavePosiNodeCount);
+            let notHavePosiPortNodeCount = this.model.get('notHavePosiPortNodeCount');
+
+            if (data.type === '0') {
+                // port
+                node.setLocation(parseInt(notHavePosiPortNodeCount / 32) * 180, parseInt(notHavePosiPortNodeCount % 32) * 30);
+                this.model.set('notHavePosiPortNodeCount', ++notHavePosiPortNodeCount);
+            }else{
+                node.setLocation(notHavePosiNodeCount * 50, $("#canvas-wrap").height() - 80);
+                this.model.set('notHavePosiNodeCount', ++notHavePosiNodeCount);
+            }
         }
 
         node.textPosition = 'Middle_Right';
         node.fontColor = "0,0,0";
-        node.setImage(`./assets/img/topo/node_${nodeImageTypeEnum['$'+data.type] || nodeImageTypeEnum['$2'] }.png`, true);
+
+        node.setImage(
+            data.icon ? `./assets/img/icons/${data.icon}` : `./assets/img/topo/node_${nodeImageTypeEnum( '$'+data.type ) || nodeImageTypeEnum( '$2' ) }.png`,
+            true
+        );
 
         node.addEventListener('mouseup', event => {
             if (event.button == 2) {
                 this.contextMenuNode = event.target;
                 const {type} = this.contextMenuNode.$$data;
+
                 this.$("#contextmenu")
                     .find("#showEquipmentInfoBtn")[type === '1' ? 'show' : 'hide']().end()
-                    .find("#showNextLevelTopoBtn")[type !== '2' ? 'show' : 'hide']().end()
+                    .find("#showNextLevelTopoBtn")[type !== '0' ? 'show' : 'hide']().end()
+
+                this.$("#contextmenu")
                     .css({
-                        top: event.layerY + this.$("#contextmenu").outerHeight(),
-                        left: event.layerX
+                        top: event.offsetY + this.$("#contextmenu").outerHeight(),
+                        left: event.offsetX
                     })
                     .show()
             }
         });
 
+        // 能双击的都是虚拟节点
         node.addEventListener('dbclick', event => {
-            const {
-                type: nodeType,
-                id
-            } = event.target.$$data;
-            if (nodeType === '0') return;
-            window.appEvent.trigger('change_tree_selectedNode', {
-                node: {
-                    nodeType,
-                    id
-                }
-            });
+            this.loadNextLevelTopo(event.target.$$data);
         });
 
         return node;
+    },
+
+    loadNextLevelTopo(data){
+        const { type, id,equipment_id } = data;
+
+        if (type === '0') return;
+
+        /* type：0-端口；1-设备 ；
+        2-专业视图组织机构中的设备节点；3、专业视图组织机构中的组织节点；
+        4-地理视图组织机构设备节点；5-地理视图组织机构组织节点； */
+
+        let nodeType = null;
+        if (type === '3' || type === '5' ) {
+            nodeType = '0'
+        }else{
+            nodeType = '1'
+        }
+
+        window.appEvent.trigger('change_tree_selectedNode', {
+            node: {
+                equipment_id, nodeType, id
+            }
+        });
     }
 });

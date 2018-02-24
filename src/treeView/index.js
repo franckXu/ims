@@ -2,13 +2,14 @@ import './index.less';
 import Model from "./model";
 
 import baseService from 'base.service';
-const getTree = baseService('getTree');
-const manageCatalog = baseService('manageCatalog');
-const updateTree = baseService('updateTree');
-const getEquipment = baseService('getEquipment');
-const qryDict = baseService('qryDict');
+const getTree         = baseService('getTree');
+const manageCatalog   = baseService('manageCatalog');
+const updateTree      = baseService('updateTree');
+const getEquipment    = baseService('getEquipment');
+const qryDict         = baseService('qryDict');
 const qryOrganization = baseService('qryOrganization');
 const mountEquipments = baseService('mountEquipments');
+const alarmGrade      = baseService('alarmGrade');
 
 const renderOptionHtml = data => data.map(v => `<option value='${v.id}'>${v.name}</option>`).join('')
 
@@ -25,14 +26,14 @@ const addIconCls = data => {
     return data;
 }
 
+window.$ = $;
+
 export default Backbone.View.extend({
     model: null,
     templates: {
         wrap: _.template(require('./treeView.html')),
     },
     events: {
-        // "click #add_item" : "appendit",
-        // "click #remove_item" : "removeit",
         'click #treeTab': 'clickTreeTabHandler'
     },
     clickTreeTabHandler(evt) {
@@ -71,7 +72,7 @@ export default Backbone.View.extend({
         const node = this.$(`#${curTabIndex === 0 ? 'proTree' : 'geographyTree'}`).tree('getSelected');
 
         this.model.set('catalogOperate', '1');
-        $("#catalog_name_ipt").val(node.text)
+        $("#catalog_name_ipt").val(node.text);
         $('#cataloginfo').dialog('open');
 
         /* if (node.nodeType === "1") {
@@ -90,80 +91,102 @@ export default Backbone.View.extend({
     refurbish() { //指点节点刷新，没搞懂api提供的reload方法，树改为异步加载后，刷新节点为再次请求节点数据
         /* let node = this.$('#resource_specialty_view').tree('getSelected');
         this.$('#resource_specialty_view').tree('reload', node.target); */
+        this.curTreeSelectNode = this.getSelectedNode();
         this.loadChilderNode(this.getSelectedNode())
+    },
+	curTreeSelectNode : null,
+    setStateByIsChildens(children) {
+        for (var i = 0; i < children.length; i++) {
+            if (children[i].ischirdens == 1) {
+                if (children[i].children) {
+                    children[i].state = 'open';
+                    this.setStateByIsChildens(children[i].children);
+                } else {
+                    children[i].state = 'closed';
+                }
+            }
+
+        }
+
     },
     renderTree(data, selector) {
         let _self = this;
-        this.$(selector).tree({
-            data: data,
-            animate: true,
-            lines: true,
-            onContextMenu: function(e, node) {
-                e.preventDefault();
-                $(this).tree('select', node.target);
-                switch (node.nodeType) { //根据节点类型判断可以进行的操作
-                    case '0':
-                        $('#operation_panel')
-                            .menu('enableItem', $('#add_catalog'))
-                            .menu('enableItem', $('#add_equipment'))
-                            .menu('enableItem', $('#edit_item'))
-                            .menu('enableItem', $('#remove_item'))
-                            .menu('enableItem', $('#refurbish_item'))
-                        break;
-                    case '1':
-                        $('#operation_panel')
-                            .menu('disableItem', $('#add_catalog'))
-                            .menu('disableItem', $('#add_equipment'))
-                            .menu('enableItem', $('#edit_item'))
-                            .menu('enableItem', $('#remove_item'))
-                            .menu('enableItem', $('#refurbish_item'))
-                        break;
-                    case '2':
-                        $('#operation_panel')
-                            .menu('disableItem', $('#add_catalog'))
-                            .menu('disableItem', $('#add_equipment'))
-                            .menu('enableItem', $('#edit_item'))
-                            .menu('enableItem', $('#remove_item'))
-                            .menu('disableItem', $('#refurbish_item'))
-                        break;
-                }
-                $('#operation_panel').menu('show', {
-                    left: e.pageX,
-                    top: e.pageY
-                });
-            },
-            onClick(node) {
-                _self.clickNodeHandler(node)
-            }
-        });
 
-    },
-    /*
-    add_catalog() { //新建目录
-        if ($('#operation_panel').menu("getItem", $('#add_catalog')).disabled) {
-            return;
+        for (var i= 0; i < data.length; i++){
+            var ch = data[i]["children"];
+            this.setStateByIsChildens(ch);
         }
-        _self.appendcatalog()
-    },
-    */
-    /*
-     add_equipment(e) { //新建设备
-        if ($('#operation_panel').menu("getItem", $('#add_equipment')).disabled) {
-            return;
-        }
-        _self.appendequipment(e)
-    },
-    */
-    /* edit_item (e) { //修改
-        _self.editit(e)
-    }, */
-    remove_item() { //删除，后台判断被删除目标节点是否有子节点
-        /* $.messager.confirm('操作确认', '确定要删除此目录/设备吗?',(r)=> {
-            console.log(r);
-            if (r) {
-                this..removeit();
-            }
-        }); */
+
+        // now restore the tree
+        // $('#tt').tree('loadData', [data]);
+
+        this.$(selector)
+            .tree({
+                data: data,
+                lines: true,
+                formatter(node){
+                    return `<em id='${node.id}' class='${ node.alarmInfo ? `alarm-${node.alarmInfo.grade}` : ''}'>${node.text}</em>`;
+                },
+                onContextMenu(e, node) {
+                    e.preventDefault();
+                    $(this).tree('select', node.target);
+                    switch (node.nodeType) { //根据节点类型判断可以进行的操作
+                        case '0':
+                            $('#operation_panel')
+                                .menu('enableItem', $('#add_catalog'))
+                                .menu('enableItem', $('#add_equipment'))
+                                .menu('enableItem', $('#edit_item'))
+                                .menu('enableItem', $('#remove_item'))
+                                .menu('enableItem', $('#refurbish_item'))
+                            break;
+                        case '1':
+                            $('#operation_panel')
+                                .menu('disableItem', $('#add_catalog'))
+                                .menu('disableItem', $('#add_equipment'))
+                                .menu('enableItem', $('#edit_item'))
+                                .menu('enableItem', $('#remove_item'))
+                                .menu('enableItem', $('#refurbish_item'))
+                            break;
+                        case '2':
+                            $('#operation_panel')
+                                .menu('disableItem', $('#add_catalog'))
+                                .menu('disableItem', $('#add_equipment'))
+                                .menu('enableItem', $('#edit_item'))
+                                .menu('enableItem', $('#remove_item'))
+                                .menu('disableItem', $('#refurbish_item'))
+                            break;
+                    }
+                    $('#operation_panel').menu('show', {
+                        left: e.pageX,
+                        top: e.pageY
+                    });
+                },
+                onClick:_.debounce(function(node) {
+                     const index = _self.model.getIndex();
+                     node.curTabIndex = index+'';
+                    _self.curTreeSelectNode = node;
+                    _self.clickNodeHandler(node)
+                },500),
+                onBeforeExpand(node) {
+                    if (!node.children) {
+                        _self.curTreeSelectNode = node;
+                         const index = _self.model.getIndex();
+                         node.curTabIndex = index + '';
+                        _self.clickNodeHandler(node)
+                    }
+                    return true;
+                },
+                onExpand(node){
+                    $(this).tree('getChildren',node.target).forEach(({target,icon})=>{
+                        if (icon) {
+                            $(target).find('span.tree-icon').css({
+                                background: `url(../../assets/img/icons/${icon}) no-repeat center center`,
+                                'background-size': '100% 100%'
+                            })
+                        }
+                    })
+                }
+            });
 
     },
     refurbish_item() { //刷新，端口应该没有刷新操作
@@ -199,7 +222,7 @@ export default Backbone.View.extend({
             if (header.rspcode === '0000') {
                 $("#equipmentTable").datagrid('loadData',response.list);
             } else {
-                alert('操作失败')
+                alert('操作失败');
             }
         })
     },
@@ -354,7 +377,8 @@ export default Backbone.View.extend({
                     response
                 }) => {
                     if (header.rspcode === '0000') {
-                        this.model.deleteNode(node);
+                        // this.model.deleteNode(node);
+                        this.$(this.getCurTab()).tree('remove',this.getSelectedNode().target)
                         $('#deleteCatalog-dialog').dialog('close')
                     } else {
                         alert('删除失败')
@@ -411,7 +435,6 @@ export default Backbone.View.extend({
                     });
 
                 param.org_id = $('#organization').data('org_id');
-
                 this.qryEquipmentList(param);
             })
             .on('click','#cancelBtn',evt=>{
@@ -424,9 +447,10 @@ export default Backbone.View.extend({
                     parent_id:     this.getSelectedNode().id,
                     equipmentList: $("#equipmentTable").datagrid('getChecked').map(item=>({equipment_id:item.id}))
                 }).then(({header,response})=>{
-                    if (header.rspdesc === '0000') {
+                    if (header.rspcode === '0000') {
                         $("#choose-equipment-dialog").dialog('close');
                         this.loadChilderNode(this.getSelectedNode())
+                        console.log(header.rspdesc);
                     }else{
                         alert('操作失败')
                     }
@@ -576,10 +600,10 @@ export default Backbone.View.extend({
                 } else {
                     /* 将数据更新到model里，保持数据与视图的一致性，
                     但此操作对视图并没有影响，视图将由easyui单独更新 */
-                    this.model.updateCatalogNode({
+                    /* this.model.updateCatalogNode({
                         id: node.id,
                         text: catalog_name
-                    });
+                    }); */
 
                     $treeViewElm.tree('update', {
                         target: node.target,
@@ -597,10 +621,7 @@ export default Backbone.View.extend({
      * 当数据为空是地，用getTree方法来加载数据
      */
     reqGetTree(reqParam) {
-        getTree(reqParam).then(({
-            header,
-            response
-        }) => {
+        getTree(reqParam).then(({ header, response }) => {
             if (header.rspcode === '0000') {
                 const tab = $('#treeTab').tabs('getSelected');
                 const index = $('#treeTab').tabs('getTabIndex', tab);
@@ -622,12 +643,21 @@ export default Backbone.View.extend({
 
                 for (let i = 0, len = list_original.length,item; i < len; i++) {
                     item = list_original[i];
+                    if (item.alarmInfo) {
+                        Object.assign(item, {
+                            alarmInfo: {
+                                grade: 2,
+                                title: "test_zhangbaogen"
+                            }
+                        })
+                    }
+
                     if (!hasParentFn(item)){
                        list.push(item)
                     }
                 }
 
-                this.model.set( index === 0 ? 'proTree': 'geographyTree', list);
+                this.model.set(index === 0 ? 'proTree': 'geographyTree', list);
 
             } else {
                 this.model.set({
@@ -640,7 +670,9 @@ export default Backbone.View.extend({
             console.log(err)
         })
     },
+
     clickNodeHandler(node) {
+        console.log('clickNodeHandler treeView-->',node);
         appEvent.trigger('change_tree_selectedNode', {
             node
         })
@@ -663,24 +695,116 @@ export default Backbone.View.extend({
         getTree({
             view_type: index === 0 ? '1' : '0',
             id: node.id,
-            nodeType : node.nodeType
-        }).then(({
-            header,
-            response
-        }) => {
-            if (header.rspcode === '0000') {
-                this.model.loadChilderNode(node, addIconCls(response.list))
-            } else {
-                alert('加载失败');
-                /* if (index === 0) {
-                    this.model.set('proTree', []);
+            nodeType: node.nodeType
+        }).then(({ header, response }) => {
+            if (header.rspcode !== '0000') return alert('加载失败');
+
+            for (var i = 0; i < response.list.length; i++){
+                var item = response.list[i];
+
+                if(item.ischirdens  === 1 )  item.state = 'closed';
+                if (item.alarmInfo) {
+                    Object.assign(item, {
+                        alarmInfo: {
+                            grade: 2,
+                            title: ""
+                        }
+                    })
+                }
+            }
+
+            const newNodeList = addIconCls(response.list);
+
+            const childrenNodeType = node.nodeType === '0' ? '1': node.nodeType === '1' ? '2': null;
+            if (childrenNodeType){
+                const idList =
+                    newNodeList
+                        .filter(item => item.nodeType === childrenNodeType)
+                        .map(item => item.nodeType === '1' ? item.equipment_id : item.id )
+                        .map(item => item.toString());
+
+                if (idList.length){
+
+                this.fetchAlarmGrade(childrenNodeType,idList)
+                    .then(({
+                        header,
+                        response
+                    }) => {
+                        if (header.rspcode !== '0000')  return alert('加载失败');
+                        response.list.forEach(alarmItem => {
+                            newNodeList.forEach(nodeItem => {
+                                if ('' + alarmItem.id === '' + nodeItem.id) {
+                                    Object.assign(nodeItem, {
+                                        alarmInfo: {
+                                            grade: alarmItem.grade,
+                                            title: alarmItem.title
+                                        }
+                                    })
+                                }
+                            })
+                        })
+
+                        this.loadChilderNodeNew(newNodeList)
+
+                        // this.model.loadChilderNode(node, newNodeList)
+                    })
                 }else{
-                    this.model.set('geographyTree', []);
-                } */
+                    // this.model.loadChilderNode(node, newNodeList);
+                    this.loadChilderNodeNew(newNodeList)
+                }
+
+            }else{
+                this.loadChilderNodeNew(newNodeList);
+                // this.model.loadChilderNode(node, newNodeList);
             }
         }, err => {
             alert(err)
             console.log(err)
+        })
+    },
+
+    getCurTab(){
+        const index = this.model.get('curTabIndex');
+        return this.$(`#${index === 0 ? 'proTree' : 'geographyTree'}`)
+    },
+
+    loadChilderNodeNew(children){
+        const $tree = this.getCurTab();
+        const root = $tree.tree('getRoot');  // get root node
+        const data = $tree.tree('getData', root.target);  // get the root node data
+        const node = this.curTreeSelectNode || $tree.tree('getSelected');
+
+        const recursive = data => {
+            for (var i = 0, len = data.length, item; i < len; i++) {
+                item = data[i];
+                if (item.id === node.id && item.nodeType === node.nodeType) {
+                    $tree
+                        .tree('update',{
+                            target : node.target,
+                            children : []
+                        })
+                        .tree('reload',node.target)
+                        .tree('append',{
+                            parent : node.target,
+                            data : children,
+                        })
+                        .tree('collapse',node.target)
+                        .tree('expand',node.target)
+
+                    break;
+                } else if (Array.isArray(item.children)) {
+                    recursive(item.children)
+                }
+            }
+        }
+
+        recursive([data]);
+    },
+
+    fetchAlarmGrade(type,idList) {
+        return alarmGrade({
+            type: type === '2' ? '0' : type === '0' ? '2' : '1',
+            id: idList
         })
     }
 });

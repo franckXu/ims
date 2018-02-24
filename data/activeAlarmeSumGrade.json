@@ -5,19 +5,36 @@
         "responseseq": "错误原因"
     },
     "response": {
-        "alarm_list": [{
-            "grade":"严重",
-            "color":"red",
-            "conut":"1"
-        },{
-            "grade":"紧急",
-            "color":"red",
-            "conut":"2"
-        },{
-            "grade":"一般",
-            "color":"red",
-            "conut":"3"
-        }]
-
+        "alarm_list": [
+            {
+                "grade": "严重",
+                "color": "red",
+                "grcount": "1"
+            },
+            {
+                "grade": "紧急",
+                "color": "red",
+                "grcount": "2"
+            },
+            {
+                "grade": "一般",
+                "color": "red",
+                "grcount": "3"
+            }
+        ],
+        "process_list": [
+            {
+                "prcount": "6",
+                "process_type": "已处理"
+            },
+            {
+                "prcount": "6",
+                "process_type": "未处理"
+            },
+            {
+                "prcount": "6",
+                "process_type": "待处理"
+            }
+        ]
     }
 }

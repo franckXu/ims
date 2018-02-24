@@ -5,6 +5,10 @@ export default Backbone.Model.extend({
         curTabIndex:    0,// 0=>专业,1=>地理,
         catalogOperate: '0',  // 树节点右击菜单的操作类型 0=>add,1=>edit,2=>del
     },
+    getIndex(){
+        const index = this.get('curTabIndex');
+        return index;
+    },
     getCurNodeByCurTabIndex(){
         return  this.get(this.get('curTabIndex') === 0 ? 'proTree' : 'geographyTree');
     },
@@ -49,7 +53,6 @@ export default Backbone.Model.extend({
         this.trigger(`change:${curTabIndex === 0 ? 'proTree' : 'geographyTree' }`);
 
     },
-
     loadChilderNode(node,children){
 
         const curTabIndex = this.get('curTabIndex');
@@ -67,7 +70,7 @@ export default Backbone.Model.extend({
                 }
             }
         }
-
+        
         recursive(nodeList);
         this.trigger(`change:${curTabIndex === 0 ? 'proTree' : 'geographyTree' }`);
     }

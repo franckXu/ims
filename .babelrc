@@ -1,4 +1,4 @@
 {
   "presets": ["env","react"],
-  "plugins": ["transform-es2015-destructuring"]
+  "plugins": ["transform-es2015-destructuring","es6-promise"]
 }

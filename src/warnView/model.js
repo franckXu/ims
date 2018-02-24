@@ -4,8 +4,14 @@ export default Backbone.Model.extend({
         activeAlarmeSumGrade:[],
         disposeTable:[],
         checkBox_arr:[],
-        contextMenuId:''
+        active_id:[],
+        aCount:'',
+        hisCount:'',
+        contextMenuId: '',
+        hisPageNumber: '',
+        aPageNumber:''
     },
     initialize: function () {
+       
     }
 });

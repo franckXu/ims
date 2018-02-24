@@ -1,68 +1,79 @@
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <span>流水号:</span>
-        <%= data.id %>
+<% _.each(data,function(data,i){ %>
+    <div id="alarm-detail-item-<%= i %>" class="alarm-detail-item <%= i === 0 ? 'cur' : '' %>">
+        <div class="row mt-3">
+            <div class="col-sm-6">
+                <span>流水号:</span>
+                <%= data.id %>
+            </div>
+            <div class="col-sm-6">
+                <span>告警标题:</span>
+                <%= data.title %>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-6">
+                <span>首次发生时间:</span>
+                <%= data.first_time %>
+            </div>
+            <div class="col-sm-6">
+                <span>末次发生时间:</span>
+                <%= data.last_time %>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-6">
+                <span>发生次数:</span>
+                <%= data.amount %>
+            </div>
+            <div class="col-sm-6">
+                <span>归属专业:</span>
+                <%= data.major %>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-6">
+                <span>告警类别:</span>
+                <%= data.type %>
+            </div>
+            <div class="col-sm-6">
+                <span>告警级别:</span>
+                <%= data.grade %>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-6">
+                <span>归属设备:</span>
+                <%= data.equipment_id %>
+            </div>
+            <div class="col-sm-6">
+                <span>归属部门:</span>
+                <%= data.org_name %>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-6">
+                <span>是否确认:</span>
+                <%= data.confirm %>
+            </div>
+            <div class="col-sm-6">
+                <span>状态:</span>
+                <%= data.status %>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-sm-3">
+                <span>告警详情:</span>
+            </div>
+            <div class="col-sm-9">
+                <span>
+                <%= data.detail %>
+            </span>
+            </div>
+        </div>
     </div>
-    <div class="col-sm-6">
-        <span>告警标题:</span>
-        <%= data.title %>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <span>首次发生时间:</span>
-        <%= data.first_time %>
-    </div>
-    <div class="col-sm-6">
-        <span>末次发生时间:</span>
-        <%= data.last_time %>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <span>发生次数:</span>
-        <%= data.amount %>
-    </div>
-    <div class="col-sm-6">
-        <span>归属专业:</span>
-        <%= data.major %>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <span>告警类别:</span>
-        <%= data.type %>
-    </div>
-    <div class="col-sm-6">
-        <span>告警级别:</span>
-        <%= data.grade %>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <span>归属设备:</span>
-        <%= data.equipment_id %>
-    </div>
-    <div class="col-sm-6">
-        <span>归属部门:</span>
-        <%= data.interface_id %>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-6">
-        <span>是否确认:</span>
-        <%= data.confirm %>
-    </div>
-    <div class="col-sm-6">
-        <span>状态:</span>
-        <%= data.status %>
-    </div>
-</div>
-<div class="row mt-3">
-    <div class="col-sm-12">
-        <span>告警详情:</span>
-        <span>
-            <%= data.detail %>
-        </span>
-    </div>
+<% }) %>
+
+<div class="row text-center mt-1" style="display:<%= data.length ? 'block' : 'none'%>;">
+    <button id="prevBtn" class="btn btn-primary" disabled>&lt;上一页</button>
+    <button id="nextBtn" class="btn btn-primary" <%= data.length < 2 ? 'disabled' : '' %>>下一页&gt;</button>
 </div>

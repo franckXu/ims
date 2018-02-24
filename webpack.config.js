@@ -9,6 +9,7 @@ module.exports = env => {
     return {
         devtool: isProd ? 'source-map' : 'eval',
         entry: {
+            'babel-polyfill' : 'babel-polyfill',
             'index': './src/index.js'
         },
         output: {
@@ -71,13 +72,13 @@ module.exports = env => {
                 })
             ]
 
-            /* if (isProd) {
+            if (isProd) {
                 ret.push(
                     new UglifyJSPlugin({
                         sourceMap: true
                     })
                 )
-            } */
+            }
 
             return ret;
         })()

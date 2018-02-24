@@ -1,5 +1,4 @@
-<div class="row mt-3">
-
+<div class="row mt-3 bd_bottom">
     <div class="col-sm-4">
         <span>
             <%= data.process_time %>
@@ -9,7 +8,8 @@
 
     <div class="col-sm-4">
         <span>
-            <%= data.process_type %>
+            <%= data.org_name %>
+            <!-- <%= data.operator_id %> -->
         </span>
 
     </div>
@@ -20,19 +20,30 @@
         </span>
 
     </div>
-
-    <div class="row mt-12">
+    
+    <div class="col-sm-12">
         <div class="col-sm-12">
+            添加处理记录：
             <span>
-                <%= data.process_record %>
+                <%= data.process_record==null?"--":data.process_record %>
+
             </span>
 
         </div>
     </div>
-    <div class="row mt-12">
+    <div class="col-sm-12">
+        <div class="col-sm-12">
+            处理结果：
+            <span>
+                <%= data.process_result==null?"--":data.process_result %>
+            </span>
+
+        </div>
+    </div>
+    <div class="col-sm-12">
         <div class="col-sm-12">
             <span>
-                <%= data.process_result %>
+                <%= data.process_type %>
             </span>
 
         </div>

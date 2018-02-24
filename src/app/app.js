@@ -34,15 +34,29 @@ export default Backbone.View.extend({
             id: "warnView",
             el: $("#warnView")
         });
-       
+
         window.treeView.render();
         window.topoView.render();
         window.warnView.render();
 
-        $('#layout').layout({
-            fit:true
-        })
-        $('#layout2').layout({})
+        $('#layout')
+            .layout({
+                fit:true,
+            })
+            .layout('panel','center').panel({
+                onResize(w,h){
+                    appEvent.trigger('resize_topo_panel_width', {w,h})
+                }
+            })
+
+        $('#layout2')
+            .layout({})
+            .layout('panel','center').panel({
+                onResize(w,h){
+                    appEvent.trigger('resize_topo_panel_height', {w,h})
+                }
+            })
+
         $('#accordion').accordion({})
         $("#moduleTabs").tabs()
 

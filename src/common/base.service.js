@@ -10,7 +10,7 @@ const createReqParam = (method, request) => {
     }
 }
 
-const SERVER_PATH = !isProd ? "/IMSMonitor/apphub/api/" : "http://localhost:3000/";
+const SERVER_PATH = isProd ? "/IMSMonitor/apphub/api/" : "/IMSMonitor/apphub/api/"; //"http://localhost:3000/";
 
 function  createRequest({method,param}) {
     return new Promise((res, rej) => {
